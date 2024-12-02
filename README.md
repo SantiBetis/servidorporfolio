@@ -7,13 +7,13 @@
 
 ## ÍNDICE
 
-1. [INTRODUCCION](#introduccion)
+1. [INTRODUCCIÓN](#introducción)
 2. [FUNCIONALIDADES DEL PROYECTO Y TECNOLOGÍAS UTILIZADAS](#funcionalidades-del-proyecto-y-tecnologías-utilizadas)
 3. [GUÍA DE INSTALACIÓN](#guía-de-instalación)
 4. [GUíA DE USO](#guía-de-uso)
 5. [ENLACE A FIGMA](#enlace-a-figma)
 6. [CONCLUSIÓN](#conclusión)
-7. [CONTRIBUCIONES, AGRADECIMIENTOS Y REFERENCIAS](#contribuciones-agradecimientos-y-referencias)
+7. [CONTRIBUCIONES](#contribuciones)
 8. [LICENCIAS](#licencias)
 9. [CONTACTO](#contacto)
 
