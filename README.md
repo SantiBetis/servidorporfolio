@@ -89,7 +89,7 @@ Asegúrate de tener instalados en tu sistema:
 **Paso 1** Clona el repositorio:
 
    ```bash
-https://github.com/SantiBetis/servidorporfolio.git
+  git clone https://github.com/SantiBetis/servidorporfolio.git
    ```
 
 **Paso 2** Navega al directorio del proyecto:
