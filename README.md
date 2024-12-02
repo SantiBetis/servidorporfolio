@@ -114,6 +114,7 @@ Asegúrate de tener instalados en tu sistema:
 ## GUÍA DE USO
 
 **Paso 1** Ejecuta el script **schema.sql** en MySQL.
+
 **Paso 2** Accede a http://localhost:8080/swagger-ui.html y prueba los endpoints que quieras.
 
 ---
