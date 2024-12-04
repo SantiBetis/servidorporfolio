@@ -12,7 +12,24 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = UrlValidator.class) 
 public @interface ValidUrl {
-    String message() default "Formato de URL inválido"; 
+    /**
+     * Mensaje de error que se muestra cuando la URL no cumple con el formato esperado.
+     * 
+     * @return mensaje de error.
+     */
+    String message() default "Formato de URL inválido"; 
+
+    /**
+     * Permite agrupar varias restricciones de validación.
+     * 
+     * @return los grupos de validación.
+     */
     Class<?>[] groups() default {}; 
+
+    /**
+     * Permite asociar metadatos adicionales a la anotación.
+     * 
+     * @return los metadatos adicionales.
+     */
     Class<? extends Payload>[] payload() default {}; 
 }

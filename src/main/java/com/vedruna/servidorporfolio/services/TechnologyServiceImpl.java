@@ -22,8 +22,8 @@ public class TechnologyServiceImpl implements TechnologyServiceI {
     ProjectRepositoryI projectRepository;
 
     /**
-     * Saves a technology with the projects associated
-     * @param technology the technology to be saved
+     * Guarda una tecnología con los proyectos asociados
+     * @param technology la tecnología a guardar
      */
     @Override
     public void saveTechnology(Technology technology) {
@@ -52,11 +52,11 @@ public class TechnologyServiceImpl implements TechnologyServiceI {
     
 
     /**
-    * Deletes a technology by their ID.
+    * Elimina una tecnología por su ID.
     * 
-    * @param id the ID of the technology to be deleted
-    * @return true if the technology was successfully deleted, otherwise throws an exception
-    * @throws IllegalArgumentException if no technology exists with the given ID
+    * @param id el ID de la tecnología a eliminar
+    * @return true si la tecnología fue eliminada exitosamente, en caso contrario lanza una excepción
+    * @throws IllegalArgumentException si no existe una tecnología con el ID proporcionado
     */
     @Override
     public boolean deleteTechnology(Integer id) {
@@ -72,10 +72,10 @@ public class TechnologyServiceImpl implements TechnologyServiceI {
 
 
     /**
-     * Finds a technology by its ID.
+     * Encuentra una tecnología por su ID.
      * 
-     * @param techId the ID of the technology to be found
-     * @return an Optional containing the technology if found, otherwise an empty Optional
+     * @param techId el ID de la tecnología a encontrar
+     * @return la tecnología si se encuentra, en caso contrario retorna null
      */
     public Technology findById(Integer techId) {
         return technologyRepository.findById(techId).orElse(null); 
@@ -83,11 +83,11 @@ public class TechnologyServiceImpl implements TechnologyServiceI {
 
 
     /**
-    * Associates a technology with a project.
+    * Asocia una tecnología con un proyecto.
     *
-    * @param technologyId the ID of the technology to associate
-    * @param projectId the ID of the project to associate with
-    * @throws IllegalArgumentException if the technology or project with the given IDs is not found
+    * @param technologyId el ID de la tecnología a asociar
+    * @param projectId el ID del proyecto con el que asociar la tecnología
+    * @throws IllegalArgumentException si no se encuentra la tecnología o el proyecto con los IDs proporcionados
     */
     @Override
     public void associateTechnologyWithProject(int projectId, int technologyId) {
@@ -100,6 +100,4 @@ public class TechnologyServiceImpl implements TechnologyServiceI {
         projectRepository.save(project);
         technologyRepository.save(technology);
     }
-
-
 }

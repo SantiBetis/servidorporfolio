@@ -18,111 +18,109 @@ import com.vedruna.servidorporfolio.services.ProjectServiceI;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1")
-@CrossOrigin
+@RequestMapping("/api/v1") // Mapea las peticiones a esta URL base
+@CrossOrigin // Permite las solicitudes desde diferentes dominios
 public class ProjectController {
 
     @Autowired
-    private ProjectServiceI projectService;
-
-
+    private ProjectServiceI projectService; // Inyecta el servicio que maneja la lógica de los proyectos
 
     /**
-     * Gets all projects.
+     * Obtiene todos los proyectos con paginación.
      *
-     * @param page the page number.
-     * @param size the page size.
-     * @return the list of projects.
+     * @param page El número de página.
+     * @param size El tamaño de la página.
+     * @return Una lista de proyectos en formato de página.
      */
     @GetMapping("/projects")
     public Page<ProjectDTO> getAllProjects(@RequestParam("page") int page, @RequestParam("size") int size) {
-        return projectService.showAllProjects(page, size);
+        return projectService.showAllProjects(page, size); // Llama al servicio para obtener los proyectos
     }
     
 
-    /**
-     * Gets a project by name.
-     *
-     * @param name the name of the project.
-     * @return the project or a 404 if not found.
-     */
+    // Endpoint para obtener proyectos por nombre, utilizando un parámetro de ruta.
+    // Este método maneja las solicitudes HTTP GET a "/projects/{name}" donde {name} es el nombre del proyecto que se busca.
+    // El método utiliza el servicio `projectService` para recuperar los proyectos que coinciden con el nombre proporcionado.
+    // Parámetro:
+    //   @PathVariable String name: El nombre del proyecto que se pasa como parte de la URL (en la ruta {name}).
+    // Retorno:
+    //   ResponseEntity<ResponseDTO<List<ProjectDTO>>>: Una respuesta HTTP que incluye un DTO con el mensaje y la lista de proyectos encontrados.
+    // Excepción:
+    //   Si no se encuentran proyectos que coincidan con el nombre, el servicio lanza una excepción, la cual se maneja y genera una respuesta adecuada.
+    //   La respuesta será un objeto `ResponseDTO` que incluye un mensaje y la lista de proyectos encontrados, o un mensaje de error si no se encuentran resultados.
+
     @GetMapping("/projects/{name}")
-    public ResponseEntity<ResponseDTO<ProjectDTO>> showProjectByName(@PathVariable String name) {
-        ProjectDTO project = projectService.showProjectByName(name);
-        ResponseDTO<ProjectDTO> response = new ResponseDTO<>("Proyecto encontrado", project);
+    public ResponseEntity<ResponseDTO<List<ProjectDTO>>> showProjectByName(@PathVariable String name) {
+        // Llama al servicio para obtener los proyectos que coinciden con el nombre proporcionado
+        List<ProjectDTO> projects = projectService.showProjectByName(name);
+        
+        // Crea un objeto ResponseDTO que envuelve la lista de proyectos y un mensaje de éxito
+        ResponseDTO<List<ProjectDTO>> response = new ResponseDTO<>("Proyectos encontrados correctamente", projects);
+        
+        // Devuelve la respuesta HTTP con el estado 200 OK y el ResponseDTO como cuerpo de la respuesta
         return ResponseEntity.ok(response);
-    }   
+    }
 
 
- 
     /**
-     * Saves a project.
+     * Guarda un nuevo proyecto.
      *
-     * @param project the project to be saved.
-     * @param bindingResult the binding result for validation errors.
-     * @return a ResponseEntity containing a ResponseDTO with either a success
-     *         message and the saved project, or an error message if validation
-     *         fails or the project's start date is before today.
+     * @param project El proyecto a guardar.
+     * @param bindingResult Los errores de validación.
+     * @return Un ResponseEntity con un mensaje de éxito o error si falla la validación.
      */
-
     @PostMapping("/projects")
     public ResponseEntity<ResponseDTO<Object>> postProject(@Valid @RequestBody Project project, BindingResult bindingResult) {
-    // Verificar si hay errores de validación
-    if (bindingResult.hasErrors()) {
-        StringBuilder errorMessages = new StringBuilder();
-        bindingResult.getFieldErrors().forEach(error -> 
-            errorMessages.append(error.getField())
-                         .append(": ")
-                         .append(error.getDefaultMessage())
-                         .append("\n")
-        );
-        ResponseDTO<Object> response = new ResponseDTO<>("Error de validación", errorMessages.toString());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        // Verifica si existen errores de validación en los campos
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            bindingResult.getFieldErrors().forEach(error -> 
+                errorMessages.append(error.getField())
+                             .append(": ")
+                             .append(error.getDefaultMessage())
+                             .append("\n")
+            );
+            ResponseDTO<Object> response = new ResponseDTO<>("Error de validación", errorMessages.toString());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // Devuelve error si la validación falla
+        }
+
+        // Verifica si la fecha de inicio es válida (no posterior a hoy)
+        LocalDate today = LocalDate.now();
+        if (project.getStart_date().toLocalDate().isAfter(today)) {
+            ResponseDTO<Object> response = new ResponseDTO<>("Error de validación", "La fecha de inicio no puede ser posterior a la fecha actual.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        // Guarda el proyecto si no hay errores
+        projectService.saveProject(project);
+        ResponseDTO<Object> response = new ResponseDTO<>("Proyecto creado", null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); // Devuelve éxito al crear el proyecto
     }
 
-    // Obtener la fecha actual
-    LocalDate today = LocalDate.now();
-
-    // Verificar si start_date es después de hoy
-    if (project.getStart_date().toLocalDate().isAfter(today)) {
-        // Si la fecha es posterior a hoy, retornar un error
-        ResponseDTO<Object> response = new ResponseDTO<>("Error de validación", "La fecha de inicio no puede ser posterior a la fecha actual.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    // Guardar el proyecto si no hay errores
-    projectService.saveProject(project);
-    ResponseDTO<Object> response = new ResponseDTO<>("Proyecto creado", null);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
-}
-
-     
-    
     /**
-     * Deletes a project.
+     * Elimina un proyecto por su ID.
      *
-     * @param id the ID of the project to be deleted.
-     * @return the response with the deleted project or a 404 if there isn't any project with the given ID.
+     * @param id El ID del proyecto a eliminar.
+     * @return Una respuesta con el mensaje de éxito o un error si no se encuentra el proyecto.
      */
     @DeleteMapping("/projects/{id}")
     public ResponseEntity<ResponseDTO<String>> deleteProject(@PathVariable Integer id) {
         boolean projectDeleted = projectService.deleteProject(id);
         if (!projectDeleted) {
-            throw new IllegalArgumentException("No hay ningún proyecto con el ID:" + id);
+            throw new IllegalArgumentException("No hay ningún proyecto con el ID:" + id); // Lanza error si no se encuentra el proyecto
         }
         ResponseDTO<String> response = new ResponseDTO<>("Proyecto eliminado", "Proyecto con ID " + id + " eliminado.");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response); // Devuelve éxito al eliminar el proyecto
     }
+
     /**
-    * Updates an existing project.
-    *
-    * @param id the ID of the project to be updated.
-    * @param project the updated project data.
-    * @param bindingResult the binding result for validation errors.
-    * @return a ResponseEntity containing a ResponseDTO with either a success 
-    *         message and the updated project, or an error message if validation 
-    *         fails or the project is not found.
-    */
+     * Actualiza un proyecto existente.
+     *
+     * @param id El ID del proyecto a actualizar.
+     * @param project Los datos del proyecto a actualizar.
+     * @param bindingResult Los errores de validación.
+     * @return Un ResponseEntity con el mensaje de éxito o error si la validación falla.
+     */
     @PutMapping("/projects/{id}")
     public ResponseEntity<ResponseDTO<Object>> updateProject(@PathVariable Integer id, @Valid @RequestBody Project project, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -133,97 +131,80 @@ public class ProjectController {
                              .append(error.getDefaultMessage())
                              .append("\n")
             );
-            
             ResponseDTO<Object> response = new ResponseDTO<>("Error de validación", errorMessages.toString());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // Devuelve error si la validación falla
         }
+
         boolean projectUpdated = projectService.updateProject(id, project);
         if (!projectUpdated) {
             ResponseDTO<Object> response = new ResponseDTO<>("Error", "No hay ningún proyecto con el ID: " + id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Devuelve error si el proyecto no existe
         }
 
         ResponseDTO<Object> response = new ResponseDTO<>("Proyecto actualizado correctamente", project);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response); // Devuelve éxito al actualizar el proyecto
     }
 
-
-
     /**
-     * Moves all projects to testing state.
+     * Mueve un proyecto al estado de testing.
      *
-     * @return a ResponseEntity with a String body and a status of 200 if the
-     *         operation is successful, or a status of 404 if there are no
-     *         projects to move.
+     * @param id El ID del proyecto a mover.
+     * @return Una respuesta con el mensaje de éxito o error si no se puede mover.
      */
     @PatchMapping("/projects/totesting/{id}")
     public ResponseEntity<String> moveProjectToTesting(@PathVariable Integer id) {
         try {
-            boolean result = projectService.moveProjectToTesting(id);
+            boolean result = projectService.moveProjectToTesting(id); // Mueve el proyecto a testing
             if (result) {
-                return ResponseEntity.ok("Proyctos movidos a testing correctamente");
-            } else if(projectService.findById(id)==null){ 
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proyectos no encontrado");
-            }else {
+                return ResponseEntity.ok("Proyectos movidos a testing correctamente");
+            } else if (projectService.findById(id) == null) { 
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proyecto no encontrado");
+            } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ningún proyecto movido a testing");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocurrió un error al mover los proyectos a testing: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al mover los proyectos a testing: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Moves all projects to production state.
+     * Mueve un proyecto al estado de producción.
      *
-     * @return a ResponseEntity with a String body and a status of 200 if the
-     *         operation is successful, or a status of 404 if there are no
-     *         projects to move.
+     * @param id El ID del proyecto a mover.
+     * @return Una respuesta con el mensaje de éxito o error si no se puede mover.
      */
     @PatchMapping("/projects/toprod/{id}")
     public ResponseEntity<String> moveProjectToProduction(@PathVariable Integer id) {
         try {
-            boolean result = projectService.moveProjectToProduction(id);
+            boolean result = projectService.moveProjectToProduction(id); // Mueve el proyecto a producción
             if (result) {
-                return ResponseEntity.ok("Proyectos movidos a production correctamente");
-            } else if(projectService.findById(id)==null){ 
+                return ResponseEntity.ok("Proyectos movidos a producción correctamente");
+            } else if (projectService.findById(id) == null) { 
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proyecto no encontrado");
-            }else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ningún proyecto movido a production");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ningún proyecto movido a producción");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al mover los proyectos a production: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al mover los proyectos a producción: " + e.getMessage());
         }
     }
 
-
-
-
-
-   
-    
     /**
-     * Gets all projects by a given technology.
-     * 
-     * @param tech The name of the technology to search for.
-     * @return a ResponseEntity with a ResponseDTO containing a list of Projects if
-     *         there are projects with the given technology, or a 404 if there are no
-     *         projects with that technology.
+     * Obtiene todos los proyectos que utilizan una tecnología específica.
+     *
+     * @param tech El nombre de la tecnología a buscar.
+     * @return Una respuesta con los proyectos encontrados o un error 404 si no hay proyectos con esa tecnología.
      */
     @GetMapping("/projects/tec/{tech}")
     public ResponseEntity<ResponseDTO<List<ProjectDTO>>> getProjectsByTechnology(@PathVariable String tech) {
-        List<ProjectDTO> projects = projectService.getProjectsByTechnology(tech);
+        List<ProjectDTO> projects = projectService.getProjectsByTechnology(tech); // Busca proyectos por tecnología
     
         if (projects.isEmpty()) {
             ResponseDTO<List<ProjectDTO>> response = new ResponseDTO<>("Ningún proyecto encontrado con esta tecnología", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Devuelve error si no se encuentra ningún proyecto
         }
     
-        ResponseDTO<List<ProjectDTO>> response = new ResponseDTO<>("Proyecto encontrados", projects);
-        return ResponseEntity.ok(response);
+        ResponseDTO<List<ProjectDTO>> response = new ResponseDTO<>("Proyectos encontrados", projects);
+        return ResponseEntity.ok(response); // Devuelve los proyectos encontrados
     }
-    
-    
-    
-
-    
 }
