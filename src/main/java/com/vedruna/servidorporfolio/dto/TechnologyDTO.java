@@ -9,17 +9,19 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TechnologyDTO{
+public class TechnologyDTO {
 
+    // Atributos que representan los datos esenciales de una tecnología.
+    private int id;             // ID único de la tecnología.
+    private String name;        // Nombre de la tecnología (por ejemplo, "Java", "React").
 
-    private int id;
-
-    private String name;
-
-
+    /**
+     * Constructor que convierte un objeto Technology a un DTO (Data Transfer Object).
+     * 
+     * @param t el objeto Technology que se va a convertir a TechnologyDTO.
+     */
     public TechnologyDTO(Technology t) {
-        this.id = t.getId();
-        this.name = t.getName();
+        this.id = t.getId();    // Asigna el ID de la tecnología al DTO.
+        this.name = t.getName(); // Asigna el nombre de la tecnología al DTO.
     }
-    
 }

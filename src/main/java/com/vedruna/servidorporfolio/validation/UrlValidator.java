@@ -9,12 +9,11 @@ public class UrlValidator implements ConstraintValidator<ValidUrl, String> {
     private static final String URL_REGEX = "^(http|https)://[a-zA-Z0-9-_.]+(?:\\.[a-zA-Z]{2,})+(?:/[\\w-._~:/?#[\\]@!$&'()*+,;=.]+)*$";
 
     /**
-     * Initializes the validator in preparation for {@link #isValid(Object, ConstraintValidatorContext) }
-     * to be called.
+     * Inicializa el validador en preparación para que se llame al método {@link #isValid(Object, ConstraintValidatorContext)}.
      * <p>
-     * The constraint annotation for the constraint being validated, eg {@link NotNull}
+     * La anotación de restricción para la restricción que se está validando, por ejemplo {@link NotNull}.
      *
-     * @param constraintAnnotation annotation instance containing the annotation's attributes
+     * @param constraintAnnotation instancia de la anotación que contiene los atributos de la anotación.
      */
     @Override
     public void initialize(ValidUrl constraintAnnotation) {
@@ -22,11 +21,11 @@ public class UrlValidator implements ConstraintValidator<ValidUrl, String> {
 
 
     /**
-     * Evaluates the url format.
+     * Evalúa el formato de la URL.
      *
-     * @param value   the url to be validated
-     * @param context context in which the constraint is evaluated
-     * @return false if the url is not valid, true otherwise
+     * @param value   la URL que se va a validar
+     * @param context el contexto en el que se evalúa la restricción
+     * @return false si la URL no es válida, true en caso contrario
      */
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
