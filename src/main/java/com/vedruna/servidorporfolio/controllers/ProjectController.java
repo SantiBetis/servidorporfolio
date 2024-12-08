@@ -51,9 +51,21 @@ public class ProjectController {
     //   La respuesta será un objeto `ResponseDTO` que incluye un mensaje y la lista de proyectos encontrados, o un mensaje de error si no se encuentran resultados.
 
     @GetMapping("/projects/{name}")
+<<<<<<< HEAD
     public ResponseEntity<Page<ProjectDTO>> showProjectByName(@PathVariable String name, Pageable pageable) {
     Page<ProjectDTO> projects = projectService.findByNameContainingIgnoreCase(name, pageable);
     return ResponseEntity.ok(projects); // Corrige aquí
+=======
+    public ResponseEntity<ResponseDTO<List<ProjectDTO>>> showProjectByName(@PathVariable String name) {
+        // Llama al servicio para obtener los proyectos que coinciden con el nombre proporcionado
+        List<ProjectDTO> projects = projectService.showProjectByName(name);
+        
+        // Crea un objeto ResponseDTO que envuelve la lista de proyectos y un mensaje de éxito
+        ResponseDTO<List<ProjectDTO>> response = new ResponseDTO<>("Proyectos encontrados correctamente", projects);
+        
+        // Devuelve la respuesta HTTP con el estado 200 OK y el ResponseDTO como cuerpo de la respuesta
+        return ResponseEntity.ok(response);
+>>>>>>> 4ae39d33a4835c6461e5ee022941dcfa03f0a181
     }
 
 
