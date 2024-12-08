@@ -1,10 +1,12 @@
 package com.vedruna.servidorporfolio.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,91 +20,77 @@ import com.vedruna.servidorporfolio.persistance.repository.StateRepositoryI;
 @Service
 public class ProjectServiceImpl implements ProjectServiceI {
 
-    
     @Autowired
     ProjectRepositoryI projectRepository;
 
-    
     @Autowired
     StateRepositoryI stateRepository;
     
     /**
-     * Gets all projects.
-     *
-     * @param page the page number.
-     * @param size the page size.
-     * @return the list of projects.
+     * Obtiene todos los proyectos con paginación.
+     * @param page número de página
+     * @param size tamaño de la página
+     * @return una página con proyectos convertidos a ProjectDTO
      */
     @Override
     public Page<ProjectDTO> showAllProjects(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size); 
-        Page<Project> projectPage = projectRepository.findAll(pageable); 
-        return projectPage.map(ProjectDTO::new); 
+        Pageable pageable = PageRequest.of(page, size); // Definir la paginación
+        Page<Project> projectPage = projectRepository.findAll(pageable); // Obtener proyectos paginados
+        return projectPage.map(ProjectDTO::new); // Convertir a ProjectDTO y devolver
     }
 
-
     /**
-     * Gets a project by name.
-     * 
-     * @param name the name of the project.
-     * @return the project or a 404 if not found.
+     * Obtiene un proyecto por su nombre.
+     * @param name el nombre del proyecto
+     * @return el ProjectDTO correspondiente al proyecto encontrado
+     * @throws IllegalArgumentException si no se encuentra el proyecto
      */
     @Override
-    public ProjectDTO showProjectByName(String name) {
-        List<Project> projects = projectRepository.findAll();
-        Project project = null;
-        for (Project p : projects) {
-            if (p.getName().contains(name)) {
-                project = p;
-                break;
-            }
-        }
-        if (project == null) {
-            throw new IllegalArgumentException("Ningún proyecto encontrado que contenga: " + name);
-        }
-        return new ProjectDTO(project);
-    }
+    public Page<ProjectDTO> findByNameContainingIgnoreCase(String name, Pageable pageable) {
+        Page<Project> projectPage = projectRepository.findByNameContainingIgnoreCase(name, pageable);
 
+        List<ProjectDTO> projects = new ArrayList<>();
+        for (Project project : projectPage) {
+            projects.add(new ProjectDTO(project));
+        }
+        return new PageImpl<>(projects, pageable, projectPage.getTotalElements());
+    
+    }
     /**
-     * Saves a project.
-     *
-     * @param project the project to be saved.
+     * Guarda un proyecto en la base de datos.
+     * @param project el proyecto a guardar
      */
     @Override
     public void saveProject(Project project) {
-        projectRepository.save(project);
+        projectRepository.save(project); // Guardar el proyecto
     }
+
     /**
-     * Deletes a project by its ID.
-     *
-     * @param id the ID of the project to be deleted
-     * @return true if the project was successfully deleted, otherwise throws an exception
-     * @throws IllegalArgumentException if no project exists with the given ID
+     * Elimina un proyecto por su ID.
+     * @param id el ID del proyecto
+     * @return true si se eliminó exitosamente
+     * @throws IllegalArgumentException si no se encuentra el proyecto
      */
     public boolean deleteProject(Integer id) {
-        Optional<Project> project = projectRepository.findById(id);
-    
+        Optional<Project> project = projectRepository.findById(id); // Buscar proyecto por ID
         if (project.isPresent()) {
-            projectRepository.deleteById(id); 
+            projectRepository.deleteById(id); // Eliminar proyecto si existe
             return true;
         } else {
-            // We throw the exception if the project is not found
             throw new IllegalArgumentException("No existe ningún proyecto con el ID: " + id);
         }
     }
-    
+
     /**
-     * Updates an existing project.
-     *
-     * @param id the ID of the project to be updated.
-     * @param project the updated project data.
-     * @return true if the project was successfully updated, otherwise returns false if no project is found with the given ID
+     * Actualiza un proyecto existente.
+     * @param id el ID del proyecto a actualizar
+     * @param project los nuevos datos del proyecto
+     * @return true si la actualización fue exitosa, false si no se encontró el proyecto
      */
-    
     public boolean updateProject(Integer id, Project project) {
-        Optional<Project> projectToUpdate = projectRepository.findById(id);
-    
+        Optional<Project> projectToUpdate = projectRepository.findById(id); // Buscar el proyecto por ID
         if (projectToUpdate.isPresent()) {
+            // Actualizar las propiedades del proyecto
             projectToUpdate.get().setName(project.getName());
             projectToUpdate.get().setDescription(project.getDescription());
             projectToUpdate.get().setStart_date(project.getStart_date());
@@ -112,29 +100,29 @@ public class ProjectServiceImpl implements ProjectServiceI {
             projectToUpdate.get().setPicture(project.getPicture());
             projectToUpdate.get().setTechnologies(project.getTechnologies());
             projectToUpdate.get().setDevelopers(project.getDevelopers());
-            projectRepository.save(projectToUpdate.get());
+            projectRepository.save(projectToUpdate.get()); // Guardar el proyecto actualizado
             return true;
         } else {
-            return false;
+            return false; // Si no se encuentra el proyecto, retornar falso
         }
     }
 
     /**
-     * Moves all projects from development to testing state.
-     *
-     * @return true if there are any projects to move, otherwise returns false
+     * Mueve un proyecto al estado de "Testing".
+     * @param id el ID del proyecto
+     * @return true si el movimiento fue exitoso
      */
     @Override
     public boolean moveProjectToTesting(Integer id) {
-        Optional<Project> projectOptional = projectRepository.findById(id);
+        Optional<Project> projectOptional = projectRepository.findById(id); // Buscar el proyecto
         boolean isUpdated = false;
         if (projectOptional.isPresent()) {
             Project project = projectOptional.get();
-            // Buscamos el estado por su ID 
+            // Buscar el estado "Testing" por su ID
             Optional<State> stateOptional = stateRepository.findById(2);
             if (stateOptional.isPresent()) {
-                project.setStateProject(stateOptional.get()); // Asignamos el estado
-                projectRepository.save(project); // Guardamos el proyecto con el nuevo estado
+                project.setStateProject(stateOptional.get()); // Asignar el estado de "Testing"
+                projectRepository.save(project); // Guardar el proyecto con el nuevo estado
                 isUpdated = true;
             } else {
                 System.out.println("Estado con ID 2 no existe.");
@@ -142,25 +130,25 @@ public class ProjectServiceImpl implements ProjectServiceI {
         } else {
             System.out.println("Proyecto con ID " + id + " no existe.");
         }
-        return isUpdated;
+        return isUpdated; // Retornar si se actualizó el proyecto
     }
-    
 
     /**
-     * Moves all projects to production state.
-     *
-     * @return true if there are any projects to move, otherwise returns false
+     * Mueve un proyecto al estado de "Producción".
+     * @param id el ID del proyecto
+     * @return true si el movimiento fue exitoso
      */
     @Override
     public boolean moveProjectToProduction(Integer id) {
-        Optional<Project> projectOptional = projectRepository.findById(id);
+        Optional<Project> projectOptional = projectRepository.findById(id); // Buscar el proyecto
         boolean isUpdated = false;
         if (projectOptional.isPresent()) {
             Project project = projectOptional.get();
+            // Buscar el estado "Producción" por su ID
             Optional<State> stateOptional = stateRepository.findById(3);
             if (stateOptional.isPresent()) {
-                project.setStateProject(stateOptional.get()); // Asignamos el estado
-                projectRepository.save(project); // Guardamos el proyecto con el nuevo estado
+                project.setStateProject(stateOptional.get()); // Asignar el estado de "Producción"
+                projectRepository.save(project); // Guardar el proyecto con el nuevo estado
                 isUpdated = true;
             } else {
                 System.out.println("Estado con ID 3 no existe.");
@@ -168,35 +156,26 @@ public class ProjectServiceImpl implements ProjectServiceI {
         } else {
             System.out.println("Proyecto con ID " + id + " no existe.");
         }
-        return isUpdated;
+        return isUpdated; // Retornar si se actualizó el proyecto
     }
-
 
     /**
-    * Finds a project by its ID.
-    *
-    * @param projectId the ID of the project to be found
-    * @return an Optional containing the found project, or an empty Optional if no project is found with the given ID
-    */
+     * Busca un proyecto por su ID.
+     * @param projectId el ID del proyecto
+     * @return el proyecto si se encuentra, o null si no existe
+     */
     @Override
     public Project findById(Integer projectId) {
-        return projectRepository.findById(projectId).orElse(null); 
+        return projectRepository.findById(projectId).orElse(null); // Buscar proyecto por ID
     }
 
+    /**
+     * Obtiene proyectos que usan una tecnología específica.
+     * @param techName el nombre de la tecnología
+     * @return una lista de ProjectDTO de proyectos que usan la tecnología
+     */
     @Override
     public List<ProjectDTO> getProjectsByTechnology(String techName) {
-        return projectRepository.findProjectsByTechnology(techName);
+        return projectRepository.findProjectsByTechnology(techName); // Buscar proyectos por tecnología
     }
-    
-    
-
-
-
-
-
-    
-
-
-    
-    
 }

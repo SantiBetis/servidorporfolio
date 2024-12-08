@@ -12,65 +12,67 @@ import com.vedruna.servidorporfolio.persistance.model.Project;
 import com.vedruna.servidorporfolio.persistance.repository.DeveloperRepositoryI;
 import com.vedruna.servidorporfolio.persistance.repository.ProjectRepositoryI;
 
+// Implementación del servicio de Developer
 @Service
 public class DeveloperServiceImpl implements DeveloperServiceI {
 
+    @Autowired
+    DeveloperRepositoryI developerRepository;  // Repositorio de Developer para interactuar con la base de datos
 
     @Autowired
-    DeveloperRepositoryI developerRepository;
-
-    @Autowired
-    ProjectRepositoryI projectRepository;
+    ProjectRepositoryI projectRepository;  // Repositorio de Project para acceder a los proyectos asociados al developer
     
     /**
-     * Saves a developer with the projects associated
-     * @param developer the developer to be saved
+     * Guarda un developer con los proyectos asociados
+     * @param developer el developer a ser guardado
      */
     @Override
     public void saveDeveloper(Developer developer) {
-    List<Project> managedProjects = new ArrayList<>();
-    
-    for (Project project : developer.getProjectsDevelopers()) {
-        projectRepository.findById(project.getId()).ifPresentOrElse(
-            managedProjects::add, 
-            () -> { 
-                throw new IllegalArgumentException("No existe ningún proyecto con ID: " + project.getId());
-            }
-        );
+        List<Project> managedProjects = new ArrayList<>();
+        
+        // Itera sobre los proyectos asociados al developer
+        for (Project project : developer.getProjectsDevelopers()) {
+            projectRepository.findById(project.getId()).ifPresentOrElse(
+                managedProjects::add,  // Si el proyecto existe, lo añade a la lista
+                () -> { 
+                    throw new IllegalArgumentException("No existe ningún proyecto con ID: " + project.getId());
+                }
+            );
+        }
+        
+        // Asocia los proyectos gestionados al developer
+        developer.setProjectsDevelopers(managedProjects);
+        
+        // Guarda el developer con los proyectos asociados
+        developerRepository.save(developer);
     }
-    
-    // Associate the projects managed by JPA to the developer
-    developer.setProjectsDevelopers(managedProjects);
-    
-    // Save the developer with the associated projects
-    developerRepository.save(developer);
-}
-
 
     /**
-    * Deletes a developer by their ID.
-    * 
-    * @param id the ID of the developer to be deleted
-    * @return true if the developer was successfully deleted, otherwise throws an exception
-    * @throws IllegalArgumentException if no developer exists with the given ID
-    */
+     * Elimina un developer por su ID.
+     * 
+     * @param id el ID del developer a ser eliminado
+     * @return true si el developer fue eliminado exitosamente, de lo contrario lanza una excepción
+     * @throws IllegalArgumentException si no existe un developer con el ID dado
+     */
     @Override
     public boolean deleteDeveloper(Integer id) {
         Optional<Developer> developer = developerRepository.findById(id);
-    
+        
         if (developer.isPresent()) {
-            developerRepository.deleteById(id); 
+            developerRepository.deleteById(id);  // Elimina el developer si existe
             return true;
         } else {
-            throw new IllegalArgumentException("No existe ninigún developer con  ID: " + id);
+            throw new IllegalArgumentException("No existe ningún developer con ID: " + id);
         }
     }
 
-
-
+    /**
+     * Encuentra un developer por su ID.
+     * @param developerId el ID del developer a buscar
+     * @return el developer si existe, o null si no existe
+     */
     @Override
     public Developer findById(Integer developerId) {
-        return developerRepository.findById(developerId).orElse(null);
+        return developerRepository.findById(developerId).orElse(null);  // Retorna el developer o null si no se encuentra
     }
-    
 }
