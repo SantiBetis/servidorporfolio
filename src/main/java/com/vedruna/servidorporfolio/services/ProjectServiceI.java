@@ -3,6 +3,7 @@ package com.vedruna.servidorporfolio.services;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.vedruna.servidorporfolio.dto.ProjectDTO;
 import com.vedruna.servidorporfolio.persistance.model.Project;
@@ -25,7 +26,11 @@ public interface ProjectServiceI {
     //   Una lista de objetos ProjectDTO que corresponden a los proyectos cuyo nombre contiene la cadena proporcionada (name).
     // Excepción:
     //   Si no se encuentran proyectos que coincidan con el nombre, se lanza una IllegalArgumentException con un mensaje adecuado.
+<<<<<<< HEAD
+    Page<ProjectDTO> findByNameContainingIgnoreCase(String name, Pageable pageable);
+=======
     List<ProjectDTO> showProjectByName(String name);
+>>>>>>> 4ae39d33a4835c6461e5ee022941dcfa03f0a181
 
     /**
      * Guarda un nuevo proyecto en la base de datos.

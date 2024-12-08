@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,10 @@ public class ProjectServiceImpl implements ProjectServiceI {
      * @throws IllegalArgumentException si no se encuentra el proyecto
      */
     @Override
+<<<<<<< HEAD
+    public Page<ProjectDTO> findByNameContainingIgnoreCase(String name, Pageable pageable) {
+        Page<Project> projectPage = projectRepository.findByNameContainingIgnoreCase(name, pageable);
+=======
     public List<ProjectDTO> showProjectByName(String name) {
         // Se obtienen todos los proyectos desde el repositorio
         List<Project> projects = projectRepository.findAll();
@@ -77,7 +82,15 @@ public class ProjectServiceImpl implements ProjectServiceI {
         return projectDTOs;
     }
     
+>>>>>>> 4ae39d33a4835c6461e5ee022941dcfa03f0a181
 
+        List<ProjectDTO> projects = new ArrayList<>();
+        for (Project project : projectPage) {
+            projects.add(new ProjectDTO(project));
+        }
+        return new PageImpl<>(projects, pageable, projectPage.getTotalElements());
+    
+    }
     /**
      * Guarda un proyecto en la base de datos.
      * @param project el proyecto a guardar
