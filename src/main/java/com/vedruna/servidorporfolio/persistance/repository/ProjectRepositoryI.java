@@ -15,11 +15,21 @@ import com.vedruna.servidorporfolio.persistance.model.Project; // Importa la ent
 public interface ProjectRepositoryI extends JpaRepository<Project, Integer> {
 
     // Método para encontrar un proyecto por su nombre (devuelve un Optional)
+<<<<<<< HEAD
+    Page<Project> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    
+    // Método para obtener todos los proyectos paginados
+    Page<Project> findAll(Pageable pageable);
+
+    
+
+=======
     public Optional<Project> findByName(String name);
 
     // Método para obtener todos los proyectos paginados
     Page<Project> findAll(Pageable pageable);
 
+>>>>>>> 4ae39d33a4835c6461e5ee022941dcfa03f0a181
     // Consulta personalizada para obtener proyectos por nombre de tecnología (utiliza JPQL)
     @Query("SELECT p FROM Project p JOIN p.technologies t WHERE t.name = :techName")
     List<ProjectDTO> findProjectsByTechnology(String techName);
