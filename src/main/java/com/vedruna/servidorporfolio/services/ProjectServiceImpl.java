@@ -46,43 +46,8 @@ public class ProjectServiceImpl implements ProjectServiceI {
      * @throws IllegalArgumentException si no se encuentra el proyecto
      */
     @Override
-<<<<<<< HEAD
     public Page<ProjectDTO> findByNameContainingIgnoreCase(String name, Pageable pageable) {
         Page<Project> projectPage = projectRepository.findByNameContainingIgnoreCase(name, pageable);
-=======
-    public List<ProjectDTO> showProjectByName(String name) {
-        // Se obtienen todos los proyectos desde el repositorio
-        List<Project> projects = projectRepository.findAll();
-    
-        // Se crea una lista para almacenar los proyectos que coincidan con el nombre dado
-        List<Project> matchingProjects = new ArrayList<>();
-    
-        // Se recorre la lista de proyectos obtenida desde la base de datos
-        for (Project project : projects) {
-            // Si el nombre del proyecto contiene la cadena 'name' proporcionada, se agrega a la lista de proyectos coincidentes
-            if (project.getName().contains(name)) {
-                matchingProjects.add(project);
-            }
-        }
-    
-        // Si no se encontraron proyectos que coincidan con el nombre, se lanza una excepción
-        if (matchingProjects.isEmpty()) {
-            throw new IllegalArgumentException("No se encontraron proyectos con el nombre: " + name);
-        }
-    
-        // Se crea una lista para almacenar los objetos DTO que representarán los proyectos
-        List<ProjectDTO> projectDTOs = new ArrayList<>();
-    
-        // Se recorre la lista de proyectos coincidentes y se convierte cada uno en su correspondiente DTO
-        for (Project p : matchingProjects) {
-            projectDTOs.add(new ProjectDTO(p));
-        }
-    
-        // Se devuelve la lista de DTOs de proyectos que coinciden con el nombre
-        return projectDTOs;
-    }
-    
->>>>>>> 4ae39d33a4835c6461e5ee022941dcfa03f0a181
 
         List<ProjectDTO> projects = new ArrayList<>();
         for (Project project : projectPage) {
